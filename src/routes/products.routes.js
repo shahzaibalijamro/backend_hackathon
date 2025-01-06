@@ -17,6 +17,6 @@ productRouter.get("/products/:id",verifyRequest, getSingleProduct)
 productRouter.put("/products/:id",verifyRequest,upload.single("image"), editProduct)
 
 //delete product
-productRouter.delete("/products/:id",verifyRequest, deleteProduct)
+productRouter.delete("/products/:productId",verifyRequest, deleteProduct)
 
 export {productRouter}

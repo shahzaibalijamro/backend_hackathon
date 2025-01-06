@@ -165,7 +165,7 @@ const deleteProduct = async (req,res) => {
                 message: "You are not authorized to delete this product!"
             })
         }
-        await product.remove();
+        await Product.findByIdAndDelete(productId);
         res.status(200).json({
             message: "Product deleted!"
         })
