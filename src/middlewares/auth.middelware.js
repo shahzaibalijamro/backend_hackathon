@@ -43,7 +43,7 @@ const verifyRequest = async (req, res, next) => {
                 req.user = user;
                 next()
             } catch (error) {
-                console.log(error.message || error);
+                console.log(error, "this");
                 if (error.message === "jwt malformed") {
                     return res.status(400).json({
                         message: "Refresh token is malformed!"

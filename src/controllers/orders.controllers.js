@@ -94,8 +94,9 @@ const getSingleOrder = async (req,res) => {
         if (!order) return res.status(404).json({
             message: "Order does not exist!"
         })
+        return res.status(200).json(order);
     } catch (error) {
-        console.log(error);
+        console.log(error,"this");
         return res.status(500).json({
             message: "Something went wrong!"
         })
