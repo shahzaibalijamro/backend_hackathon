@@ -6,11 +6,13 @@ import { authRouter } from "./src/routes/auth.routes.js"
 import { serverRouter } from "./src/routes/server.routes.js"
 import { userRouter } from "./src/routes/users.routes.js"
 import { productRouter } from "./src/routes/products.routes.js"
+import { orderRouter } from "./src/routes/orders.routes.js"
 
 app.use("/api/v1", authRouter)
 app.use("/api/v1", userRouter)
 app.use("/api/v1", serverRouter)
 app.use("/api/v1", productRouter)
+app.use("/api/v1", orderRouter)
 
 app.get("/", (req,res) => {
     res.send("Hello World!")

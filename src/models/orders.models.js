@@ -16,7 +16,7 @@ const orderSchema = new mongoose.Schema({
                 default: 1
             }
         },
-],
+    ],
     totalPrice: {
         type: String,
     },
