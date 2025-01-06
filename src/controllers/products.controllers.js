@@ -1,10 +1,9 @@
 import Product from "../models/products.models.js"
 import User from "../models/users.models.js"
-import Order from "../models/orders.models.js"
 import { uploadImageToCloudinary } from "../utils/cloudinary.utils.js";
 import mongoose from "mongoose";
 
-const addProducts = async (req,res) => {
+const addProduct = async (req,res) => {
     const user = req.user;
     const {name,description,price} = req.body;
     if (!req.file) return res.status(400).json({
@@ -53,9 +52,51 @@ const addProducts = async (req,res) => {
     }
 }
 
-const editProducts = async (req, res) => {
+const getAllProducts = async (req,res) => {
+    const page = req.query?.page || 1;
+    const limit = req.query?.limit || 10;
+    const skip = (+page - 1) * +limit;
+    try {
+        const products = await Product.find({}).skip(skip).limit(limit);
+        if(products.length === 0) return res.status(200).json({
+            message: "no products left!"
+        })
+        res.status(200).json(products);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Something went wrong",
+        })
+    }
+}
+
+const getSingleProduct = async (req,res) => {
+    const {id} = req.params;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+            message: "Product id is required and must be valid!"
+        })
+    }
+    try {
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({
+                message: "Product does not exist!"
+            })
+        }
+        return res.status(200).json(product)
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        })
+    }
+}
+
+const editProduct = async (req, res) => {
     const user = req.user;
-    const {name,description,price,productId} = req.body;
+    const {id : productId} = req.params;
+    const {name,description,price} = req.body;
     const mediaPath = req.file ? req.file.path : null;
     try {
         if (!name && !description && !price && !mediaPath) {
@@ -104,45 +145,36 @@ const editProducts = async (req, res) => {
     }
 }
 
-const getSingleProduct = async (req,res) => {
-    const {id} = req.params;
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({
-            message: "Product id is required and must be valid!"
-        })
-    }
+const deleteProduct = async (req,res) => {
+    const user = req.user;
+    const { productId } = req.params;
     try {
-        const product = await Product.findById(id);
-        if (!product) {
-            return res.status(404).json({
-                message: "Product does not exist!"
+        if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({
+                message: "Product Id is required and must be valid"
             })
         }
-        return res.status(200).json(product)
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({
-            message: "Something went wrong!"
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({
+                message: "Product doesn't exist"
+            })
+        }
+        if (product.seller.toString() !== user._id.toString()) {
+            return res.status(403).json({
+                message: "You are not authorized to delete this product!"
+            })
+        }
+        await product.remove();
+        res.status(200).json({
+            message: "Product deleted!"
         })
-    }
-}
-
-const getAllProducts = async (req,res) => {
-    const page = req.query?.page || 1;
-    const limit = req.query?.limit || 10;
-    const skip = (+page - 1) * +limit;
-    try {
-        const products = await Product.find({}).skip(skip).limit(limit);
-        if(products.length === 0) return res.status(200).json({
-            message: "no products left!"
-        })
-        res.status(200).json(products);
     } catch (error) {
-        console.log(error);
+        console.log(error.message || error);
         res.status(500).json({
-            message: "Something went wrong",
+            message: "Something went wrong while deleting the product!"
         })
     }
 }
 
-export {addProducts,editProducts,getSingleProduct,getAllProducts}
+export {addProduct,editProduct,getSingleProduct,getAllProducts,deleteProduct}

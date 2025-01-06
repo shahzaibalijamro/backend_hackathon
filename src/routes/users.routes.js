@@ -5,10 +5,10 @@ import { verifyRequest } from "../middlewares/auth.middelware.js";
 const userRouter = express.Router();
 
 //register User
-userRouter.post("/register", upload.single("image"), registerUser)
+userRouter.post("/auth/register", upload.single("image"), registerUser)
 
 //login User
-userRouter.post("/login", loginUser)
+userRouter.post("/auth/login", loginUser)
 
 //delete User
 userRouter.delete("/delete", verifyRequest, deleteUser)
