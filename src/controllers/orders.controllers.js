@@ -1,6 +1,7 @@
 import Product from "../models/products.models.js"
 import User from "../models/users.models.js"
 import Order from "../models/orders.models.js"
+import mongoose from "mongoose";
 
 const orderProducts = async (req, res) => {
     const user = req.user;
@@ -10,6 +11,7 @@ const orderProducts = async (req, res) => {
             message: "No product found!"
         })
     }
+    let session;
     try {
         const productIds = products.map(item => item.productId);
         const productDetails = await Product.find({ _id: { $in: productIds } });
@@ -26,21 +28,33 @@ const orderProducts = async (req, res) => {
                 subTotal
             };
         });
-        const createOrder = await Order.create({
+        session = await mongoose.startSession();
+        session.startTransaction();
+        const createOrder = await Order.create([{
             user: user._id,
             products: orderDetails,
             total: totalPrice
-        })
+        }],{session});
+        const updateUserOrders = await User.findByIdAndUpdate(user._id,{$push: {orders: createOrder[0]._id}},{session});
+        if (!createOrder || !updateUserOrders) {
+            await session.abortTransaction();
+            return res.status(500).json({
+                message: "Could not take order!"
+            })
+        }
+        await session.commitTransaction();
         return res.status(200).json({
-            user: user._id,
-            products: orderDetails,
-            total: totalPrice
+            message: "Order taken",
+            order: createOrder
         });
     } catch (error) {
         console.log(error);
+        if(session) await session.abortTransaction();
         return res.status(500).json({
             message: "Something went wrong!"
         })
+    }finally{
+        if(session) await session.endSession();
     }
 }
 
