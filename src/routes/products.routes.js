@@ -8,7 +8,7 @@ const productRouter = express.Router();
 productRouter.post("/products",verifyRequest,upload.single("image"), addProduct)
 
 //get all products
-productRouter.get("/products",verifyRequest, getAllProducts)
+productRouter.get("/products", getAllProducts)
 
 //get single product
 productRouter.get("/products/:id",verifyRequest, getSingleProduct)
